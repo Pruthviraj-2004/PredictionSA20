@@ -11,8 +11,8 @@ urlpatterns = [
     path("update_match/<match_id>", views.update_match, name="update_match"),
     path("login_user", views.login_user, name="login"),
     # path("login_user1", views.login_user1, name="login1"),
-    # path("predict", views.predict, name="predict"),
-    path("predict", views.login_user3, name="predict"),
+    path("predict", views.predict, name="predict"),
+    # path("predict", views.login_user3, name="predict"),
     path("logout_user", views.logout_user, name="logout"),
 
     path('get_teams_for_match/<int:match_id>/', GetTeamsForMatch.as_view(), name='get_teams_for_match'),

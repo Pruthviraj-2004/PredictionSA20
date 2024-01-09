@@ -10,6 +10,7 @@ from django.views import View
 from datetime import datetime, timedelta
 from pytz import timezone
 
+
 def home(request):
     return render(request,"predictsa20/home.html",{})
 
@@ -81,7 +82,6 @@ def login_user(request):
         return render(request, 'predictsa20/login.html', {})
 
 IST = timezone('Asia/Kolkata')
-MATCH_START_TIME = IST.localize(datetime.strptime('2025-01-15 21:00', '%Y-%m-%d %H:%M'))
 
 def predict(request):
     match_list = Match.objects.all().filter(match_status=0).order_by('match_date')
@@ -89,18 +89,24 @@ def predict(request):
     current_time = datetime.now(IST)
 
     if request.method == "POST":
-        # Check if submissions are allowed based on the match start time
+        smatch_id = request.POST.get('match_id')
+        match = Match.objects.get(pk=smatch_id)
+
+        # Extract the time from the datetime field
+        match_start_time = match.match_start_time
+
+        MATCH_START_TIME = IST.localize(datetime.combine(match.match_date, match_start_time))
+
+        # Check if submissions are allowed based on the match date and time
         if current_time < MATCH_START_TIME:
             username = request.POST['username']
             pass1 = request.POST['pass1']
             
-            smatch_id = request.POST.get('match_id')
             predicted_team = request.POST.get('predicted_team')
             
             user = authenticate(request, username=username, password=pass1)
 
             if user is not None:            
-
                 existing_submission = Submissions.objects.filter(susername=username, smatch_id=smatch_id).first()
 
                 if existing_submission:
@@ -120,6 +126,7 @@ def predict(request):
             return redirect('home')
     else:
         return render(request, 'predictsa20/predict.html', {'match_list': match_list})
+
 
 def logout_user(request):
     logout(request)
@@ -166,156 +173,3 @@ def score_update3(request,match_id):
         ur.save()
         
     return render(request, 'predictsa20/score_update.html', {'matches1':matches1,'teama':winner_team,'users_list':users_list})
-
-
-def login_user3(request):
-    match_list = Match.objects.all().filter(match_status=0).order_by('match_date')
-
-    current_time = datetime.now(IST)
-
-    if request.method == "POST":
-        smatch_id = request.POST.get('match_id')
-        match = Match.objects.get(pk=smatch_id)
-
-        # Combine match date and start time to create MATCH_START_TIME
-        match_start_datetime = datetime.combine(match.match_date, match.match_start_time)
-        match_start_time_ist = IST.localize(match_start_datetime)
-
-        # Check if submissions are allowed based on the match date and time
-        if current_time < match_start_time_ist:
-            username = request.POST['username']
-            pass1 = request.POST['pass1']
-            
-            predicted_team = request.POST.get('predicted_team')
-            
-            user = authenticate(request, username=username, password=pass1)
-
-            if user is not None:            
-                existing_submission = Submissions.objects.filter(susername=username, smatch_id=smatch_id).first()
-
-                if existing_submission:
-                    existing_submission.predicted_team = predicted_team
-                    existing_submission.save()
-                else:
-                    submission = Submissions(susername=username, smatch_id=smatch_id, predicted_team=predicted_team)
-                    submission.save()
-
-                messages.success(request, "Submission successful.")
-                return redirect('leaderboard1')
-            else:
-                messages.error(request, "There is an error while logging in.")
-                return redirect('home')
-        else:
-            messages.error(request, "Submissions are closed as the match has started.")
-            return redirect('home')
-    else:
-        return render(request, 'predictsa20/predict.html', {'match_list': match_list})
-
-
-# from django.utils import timezone
-
-# def is_submission_allowed(match):
-#     IST = timezone('Asia/Kolkata')
-    
-#     # Extract the time from the datetime field
-#     match_start_time = match.match_date.time()
-
-#     MATCH_START_TIME = IST.localize(datetime.combine(match.match_date.date(), match_start_time))
-    
-#     current_time = timezone.now()
-#     return current_time < MATCH_START_TIME
-
-# def login_user3(request):
-#     match_list = Match.objects.all().filter(match_status=0).order_by('match_date')
-
-#     if request.method == "POST":
-#         smatch_id = request.POST.get('match_id')
-#         match = Match.objects.get(pk=smatch_id)
-
-#         # Check if submissions are allowed based on the match date and time
-#         if is_submission_allowed(match):
-            
-#             username = request.POST['username']
-#             pass1 = request.POST['pass1']
-#             predicted_team = form.cleaned_data['predicted_team']
-            
-#             user = authenticate(request, username=username, password=pass1)
-
-#             if user is not None:            
-#                 existing_submission = Submissions.objects.filter(susername=username, smatch_id=smatch_id).first()
-
-#                 if existing_submission:
-#                     existing_submission.predicted_team = predicted_team
-#                     existing_submission.save()
-#                 else:
-#                     submission = Submissions(susername=username, smatch_id=smatch_id, predicted_team=predicted_team)
-#                     submission.save()
-
-#                 messages.success(request, "Submission successful.")
-#                 return redirect('leaderboard1')
-#             else:
-#                 messages.error(request, "There is an error while logging in.")
-#                 return redirect('home')
-            
-#         else:
-#             messages.error(request, "Submissions are closed as the match has started.")
-#             return redirect('home')
-#     else:
-#         # Initialize your form and pass it to the template
-        
-#         return render(request, 'predictsa20/predict.html', {'match_list': match_list, 'form': form})
-    
-
-# from django.utils import timezone
-# from datetime import datetime
-
-# # IST = timezone('Asia/Kolkata')
-
-# def allow_submission(match):
-#     current_time = timezone.now()
-
-#     # Extract the time from the datetime field
-#     match_start_time = match.match_start_time
-
-#     MATCH_START_TIME = IST.localize(datetime.combine(match.match_date, match_start_time))
-
-#     return current_time < MATCH_START_TIME
-
-# # from .models import allow_submission
-
-# def login_user3(request):
-#     match_list = Match.objects.all().filter(match_status=0).order_by('match_date')
-
-#     if request.method == "POST":
-#         smatch_id = request.POST.get('match_id')
-#         match = Match.objects.get(pk=smatch_id)
-
-#         # Check if submissions are allowed based on the match date and time
-#         if allow_submission(match):
-#             username = request.POST['username']
-#             pass1 = request.POST['pass1']
-            
-#             predicted_team = request.POST.get('predicted_team')
-            
-#             user = authenticate(request, username=username, password=pass1)
-
-#             if user is not None:            
-#                 existing_submission = Submissions.objects.filter(susername=username, smatch_id=smatch_id).first()
-
-#                 if existing_submission:
-#                     existing_submission.predicted_team = predicted_team
-#                     existing_submission.save()
-#                 else:
-#                     submission = Submissions(susername=username, smatch_id=smatch_id, predicted_team=predicted_team)
-#                     submission.save()
-
-#                 messages.success(request, "Submission successful.")
-#                 return redirect('leaderboard1')
-#             else:
-#                 messages.error(request, "There is an error while logging in.")
-#                 return redirect('home')
-#         else:
-#             messages.error(request, "Submissions are closed as the match has started.")
-#             return redirect('home')
-#     else:
-#         return render(request, 'predictsa20/predict.html', {'match_list': match_list})
