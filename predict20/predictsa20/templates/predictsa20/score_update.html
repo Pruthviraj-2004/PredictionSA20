@@ -1,0 +1,49 @@
+{% extends 'predictsa20/base.html'%}
+
+
+{% block content %}
+  {% if user.is_authenticated %}
+    {% if request.user.is_superuser %}
+<center>
+    <h1>Score Update</h1>
+    <br>
+
+
+    <form action="" method=POST>
+        {% csrf_token %}
+
+            <div class="mb-3">
+              <label for="smatch_id" class="form-label">Match ID</label>
+              <input type="number" class="form-control" name="smatch_id">
+            </div>
+
+            <div class="mb-3">
+              <label for="predicted_team" class="form-label">Team Name</label>
+              <input type="text" class="form-control" name="predicted_team">
+            </div> 
+            
+        <input type="submit" value="Submit" class="btn btn-secondary">
+    
+    </form>
+
+
+{% comment %}     
+    {% for users in correct_team_users%}
+    {{ users }}
+    {{ users.score }}
+    {% endfor %} {% endcomment %}
+
+    {% comment %} {% for a in matches1 %} {% endcomment %}
+    {% comment %} {{a}} {% endcomment %}
+    {% comment %} {% endfor %} {% endcomment %}
+    {{ teama }}
+    {{ users_list }}
+
+</center>
+{% else %}
+<h1>Sorry! You must be Logged in to view this Page</h1>
+{% endif %}
+{% endif %}
+{% endblock %}
+
+

@@ -1,0 +1,100 @@
+{% extends 'predictsa20/base.html'%}
+
+{% block content %}
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;z
+        }
+
+        .fixture-container {
+            margin-top: 70px;
+        }
+
+        .fixture-table {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+        }
+
+        .fixture-table th, .fixture-table td {
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+        }
+
+        .fixture-table th {
+            background-color: #343a40;
+            color: #fff;
+        }
+
+        .date-column {
+            font-weight: bold;
+        }
+    </style>
+    <title>Predictive Play - Fixtures</title>
+</head>
+<body>
+<div class="container fixture-container">
+    <h2>Fixtures</h2>
+    <div class="fixture-table">
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th class="date-column">Date</th>
+                    <th>Matchs</th>
+                    {% if user.is_authenticated %}
+                        {% if request.user.is_superuser %}
+                        <th>Update</th>
+                        {% endif %}
+                    {% endif%}
+                </tr>
+            </thead>
+            <tbody>
+                {% for match in matches %}
+                        <tr>
+                            <td class="date-column">{{match.match_date}}</td>
+                            <td>{{match.match_team_A}} VS {{match.match_team_B}}</td>
+                            {% if user.is_authenticated %}
+                                {% if request.user.is_superuser %}
+                                <td><a href="{% url 'update_match' match.match_id %}" class="btn btn-outline-secondary btn-sm"> Update </a></td>
+                                {% endif %}
+                            {% endif %}
+                        </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+</div>
+<br><br>
+
+    <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center">                     
+    
+            {% if matches.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page=1">&laquo; First</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ matches.previous_page_number }}">Previous</a></li>
+            {% endif %}
+    
+            {% for i in nums %}
+                <li class="page-item"><a class="page-link" href="?page={{ forloop.counter }}">{{ forloop.counter }}</a></li>
+            {% endfor %}
+    
+            {% if matches.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ matches.next_page_number }}">Next</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ matches.paginator.num_pages }}">Last &raquo;</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    </body>
+{% endblock %}

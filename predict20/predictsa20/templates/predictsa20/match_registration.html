@@ -1,0 +1,24 @@
+{% extends 'predictsa20/base.html'%}
+
+{% block content %}
+{% if user.is_authenticated %}
+    <h1> Add Match To Database </h1>
+    <br>
+    <br>
+    {% if submitted %}
+        Match Submitted Succesfully!!!
+    {% else %}
+    
+    <form action="" method=POST>
+        {% csrf_token %}
+
+        {{ form.as_p}}
+
+
+        <input type="submit" value="Submit" class="btn btn-secondary">
+    </form>
+    {% endif %}
+{% else %}
+    <h1> Sorry! You must be Logged in to view this Page</h1>
+{% endif %}
+{% endblock %}
