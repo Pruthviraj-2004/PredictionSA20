@@ -49,9 +49,11 @@
                     <th>Points</th>
                 </tr>
 
+                {% comment %} {% for user in user_list %} {% endcomment %}
                 {% for user in users %}
                 <tr>
-                    <td>{{ forloop.counter }}</td>
+                    {% comment %} <td>{{ forloop.counter }}</td> {% endcomment %}
+                    <td>{{ user.rank }}</td>
                     <td class="username-column">{{ user.user }}</td>
                     <td>{{ user.score }}</td>
                 </tr>

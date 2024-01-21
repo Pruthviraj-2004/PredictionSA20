@@ -26,11 +26,27 @@ def fixtures(request):
 def leaderboard(request):
     user_list = UserInfo.objects.all().order_by('-score')
     
+    for rank, user_info in enumerate(user_list, start=1):
+        user_info.rank = rank
+
+    
     p = Paginator(user_list,5)
     page = request.GET.get('page')
     users = p.get_page(page)
     nums = "a" * users.paginator.num_pages
     return render(request,'predictsa20/leaderboard.html',{'user_list':user_list,'users':users,'nums':nums})
+
+# def leaderboard(request):
+#     # Assuming user_list is the list of users ordered by score
+#     user_list = UserInfo.objects.all().order_by('-score')
+
+#     # Assign ranks to users in Python
+#     for rank, user_info in enumerate(user_list, start=1):
+#         user_info.rank = rank
+
+#     # Pass 'user_list' to the template
+#     return render(request, 'your_template.html', {'user_list': user_list})
+
 
 def match_registration(request):
     if request.method == "POST":
