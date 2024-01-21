@@ -1,0 +1,16 @@
+{% extends 'predictsa20/base.html' %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2>Enter Your Username</h2>
+        
+        <form method="post" action="{% url 'user_input_form' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+{% endblock %}

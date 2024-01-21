@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django import forms
 from django.forms import ModelForm
 from .models import Match, Submissions
+from django.contrib.auth.forms import PasswordResetForm
 
 
 class RegisterUserForm(UserCreationForm):
@@ -11,6 +12,18 @@ class RegisterUserForm(UserCreationForm):
     class Meta:
         model = User
         fields = ("username","email","password1","password2")
+        error_messages = {
+            'username': {
+                'required': 'This field is required.',
+                'max_length': 'Username must be 150 characters or fewer. Letters, digits and @/./+/-/_ only.',
+            },
+            'password1': {
+                'too_similar': 'Your password cant be too similar to your other personal information.',
+                'min_length': 'Your password must contain at least 8 characters.',
+                'common_password': 'Your password cant be a commonly used password.',
+                'numeric_password': 'Your password cant be entirely numeric.',
+            },
+        }
 
     def __init__(self,*args,**kwargs):
         super(RegisterUserForm,self).__init__(*args,**kwargs)
@@ -42,3 +55,10 @@ class MatchForm(ModelForm):
             'match_status': forms.TextInput(attrs={'class':'form-control','placeholder':'Match Status'}),
             'match_winner': forms.TextInput(attrs={'class':'form-control','placeholder':'Match Winner'}),
         }
+
+class CustomPasswordResetForm(PasswordResetForm):
+     username = forms.CharField(max_length=254, label='Username')
+
+     class Meta :
+         model =User
+         fields=("username","email")

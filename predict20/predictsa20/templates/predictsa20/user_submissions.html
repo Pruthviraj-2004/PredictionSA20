@@ -1,0 +1,29 @@
+{% extends 'predictsa20/base.html' %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2>User Submissions for {{ username }}</h2>
+        
+        <table class="table table-bordered mt-3">
+            <thead>
+                <tr>
+                    <th>Match ID</th>
+                    <th>Match Between</th>
+                    
+                    <th>Predicted Team</th>
+                    <th>Match Winner</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for submission in submissions %}
+                    <tr>
+                        <td>{{ submission.smatch_id }}</td>
+                        <td>{{ submission.match_team_A }} v/s {{ submission.match_team_B }}</td>
+                        <td>{{ submission.predicted_team }}</td>
+                        <td>{{ submission.match_winner }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

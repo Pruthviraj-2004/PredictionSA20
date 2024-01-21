@@ -57,7 +57,7 @@
             <tbody>
                 {% for match in matches %}
                         <tr>
-                            <td class="date-column">{{match.match_date}}</td>
+                            <td class="date-column">{{match.match_date}},{{match.match_start_time}}</td>
                             <td>{{match.match_team_A}} VS {{match.match_team_B}}</td>
                             {% if user.is_authenticated %}
                                 {% if request.user.is_superuser %}

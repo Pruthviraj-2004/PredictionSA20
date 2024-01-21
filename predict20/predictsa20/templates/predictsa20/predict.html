@@ -1,68 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login Form</title>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
-    <!-- Custom CSS -->
-    <style>
-      body {
-        background-color: #f8f9fa;
-      }
-      
-      .login-container {
-        max-width: 400px;
-        margin: auto;
-        margin-top: 100px;
-        background-color: #ffffff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      }
-    </style>
-  </head>
 {% extends 'predictsa20/base.html'%}
 
 {% block content %}
   <body>
-
     <div class="container mt-5">
-      <h1>Predict</h1>
-      <form method="post" action="">
-        {% csrf_token %}
-        <div class="mb-3">
-          <label for="username" class="form-label">Username:</label>
-          <input type="text" name="username" class="form-control" required />
+      <div class="card">
+        <div class="card-body">
+          <h1 class="card-title">Predict</h1>
+          <form method="post" action="">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="username" class="form-label">Username:</label>
+              <input type="text" name="username" class="form-control" required />
+            </div>
+            <div class="mb-3">
+              <label for="pass1" class="form-label">Password:</label>
+              <input type="password" name="pass1" class="form-control" required />
+            </div>
+            <div class="mb-3">
+              <label for="match_id" class="form-label">Select a match:</label>
+              <select name="match_id" class="form-select" required>
+                <option value="" disabled selected>Select Match</option>
+                {% for match in match_list %}
+                  <option value="{{ match.match_id }}">{{ forloop.counter }}.{{ match }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="predicted_team" class="form-label">Predicted Team:</label>
+              <select name="predicted_team" class="form-select" required>
+                <option value="" disabled selected>Select Team</option>
+                {% for match in match_list %}
+                  {% if match.match_id == selected_match_id %}
+                    <option value="{{ match.match_team_A }}">{{ match.match_team_A }}</option>
+                    <option value="{{ match.match_team_B }}">{{ match.match_team_B }}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+            <button type="submit" class="btn btn-secondary">Predict</button>
+          </form>
+          <button type="button" class="btn btn-link" onclick="window.location.href='{% url 'password_reset' %}'">Forgot Password</button>
         </div>
-        <div class="mb-3">
-          <label for="pass1" class="form-label">Password:</label>
-          <input type="password" name="pass1" class="form-control" required />
-        </div>
-        <div class="mb-3">
-          <label for="match_id" class="form-label">Select a match:</label>
-          <select name="match_id" class="form-select" required>
-            <option value="" disabled selected>Select Match</option>
-            {% for match in match_list %}
-              <option value="{{ match.match_id }}">{{ match }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="mb-3">
-          <label for="predicted_team" class="form-label">Predicted Team:</label>
-          <select name="predicted_team" class="form-select" required>
-            <option value="" disabled selected>Select Team</option>
-            {% for match in match_list %}
-              {% if match.match_id == selected_match_id %}
-                <option value="{{ match.match_team_A }}">{{ match.match_team_A }}</option>
-                <option value="{{ match.match_team_B }}">{{ match.match_team_B }}</option>
-              {% endif %}
-            {% endfor %}
-          </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Predict</button>
-      </form>
+      </div>
     </div>
 
 
@@ -89,29 +68,5 @@
           })
       })
     </script>
-    <!-- Bootstrap JS and dependencies -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-
-    <!-- Custom JS -->
-    <script>
-      function submitForm() {
-        var username = document.getElementById('username').value
-        var password = document.getElementById('password').value
-        var role = document.getElementById('role').value
-      
-        // Perform validation or additional actions if needed
-      
-        // For demo purposes, just log the values
-        console.log('Username:', username)
-        console.log('Password:', password)
-        console.log('Role:', role)
-      
-        // You can add AJAX or other logic to submit the form data to the server
-      }
-    </script>
   </body>
-
 {% endblock %}
-</html>

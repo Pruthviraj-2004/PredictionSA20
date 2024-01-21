@@ -10,9 +10,30 @@ from django.views import View
 from datetime import datetime, timedelta
 from pytz import timezone
 
+from django.contrib.auth import views as auth_views
+from django import forms
+from django.contrib.auth.views import PasswordResetView
+from django.contrib.auth.forms import PasswordResetForm
+from django.http import HttpResponseRedirect
+from django.urls import reverse_lazy
+from django.contrib.auth.models import User
+from .forms import CustomPasswordResetForm 
+
+from django.contrib.sites.shortcuts import get_current_site  
+from django.utils.encoding import force_bytes
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode  
+from django.template.loader import render_to_string  
+from .tokens import account_activation_token  
+from django.contrib.auth.models import User  
+from django.core.mail import EmailMessage  
+from django.contrib.auth import get_user_model
+from django.http import HttpResponse
+
 
 def home(request):
-    return render(request,"predictsa20/home.html",{})
+    num_users = UserInfo.objects.count()
+    return render(request,"predictsa20/home.html",{"num_users":num_users})
 
 def fixtures(request):
     match_list = Match.objects.all().filter(match_status=0).order_by('match_date')
@@ -24,29 +45,17 @@ def fixtures(request):
     return render(request,"predictsa20/fixtures.html",{'match_list':match_list,'matches':matches,'nums':nums})
 
 def leaderboard(request):
-    user_list = UserInfo.objects.all().order_by('-score')
+    user_list = UserInfo.objects.all().order_by('-score','user__username')
     
     for rank, user_info in enumerate(user_list, start=1):
         user_info.rank = rank
 
     
-    p = Paginator(user_list,5)
+    p = Paginator(user_list,10)
     page = request.GET.get('page')
     users = p.get_page(page)
     nums = "a" * users.paginator.num_pages
     return render(request,'predictsa20/leaderboard.html',{'user_list':user_list,'users':users,'nums':nums})
-
-# def leaderboard(request):
-#     # Assuming user_list is the list of users ordered by score
-#     user_list = UserInfo.objects.all().order_by('-score')
-
-#     # Assign ranks to users in Python
-#     for rank, user_info in enumerate(user_list, start=1):
-#         user_info.rank = rank
-
-#     # Pass 'user_list' to the template
-#     return render(request, 'your_template.html', {'user_list': user_list})
-
 
 def match_registration(request):
     if request.method == "POST":
@@ -136,7 +145,7 @@ def predict(request):
                 return redirect('leaderboard')
             else:
                 messages.error(request, "There is an error while logging in.")
-                return redirect('home')
+                return redirect('predict')#redirect to predict
         else:
             messages.error(request, "Submissions are closed as the match has started.")
             return redirect('home')
@@ -149,7 +158,24 @@ def logout_user(request):
     messages.success(request, ("Logged Out Successfully!! "))
     return redirect('home')
 
-def register_user(request):
+# def register_user(request):
+#     if request.method == "POST":
+#         form = RegisterUserForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             username = form.cleaned_data['username']
+#             pass1 = form.cleaned_data['password1']
+#             user = authenticate(username=username, password=pass1)
+#             login(request, user)
+#             messages.success(request, ("Registration Successful"))
+#             return redirect('home')
+        
+#     else:
+#         form = RegisterUserForm()
+
+#     return render(request, 'predictsa20/register_user.html', {'form':form})
+
+def register_user2(request):
     if request.method == "POST":
         form = RegisterUserForm(request.POST)
         if form.is_valid():
@@ -164,7 +190,7 @@ def register_user(request):
     else:
         form = RegisterUserForm()
 
-    return render(request, 'predictsa20/register_user.html', {'form':form})
+    return render(request, 'predictsa20/register_user2.html', {'form':form})
 
 class GetTeamsForMatch(View):
     def get(self, request, match_id):
@@ -189,3 +215,111 @@ def score_update3(request,match_id):
         ur.save()
         
     return render(request, 'predictsa20/score_update.html', {'matches1':matches1,'teama':winner_team,'users_list':users_list})
+
+
+def activate(request, uidb64, token):  
+    User = get_user_model()  
+    try:  
+        uid = force_str(urlsafe_base64_decode(uidb64))  
+        user = User.objects.get(pk=uid)  
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):  
+        user = None  
+    if user is not None and account_activation_token.check_token(user, token):  
+        user.is_active = True  
+        user.save()  
+        return HttpResponse('Thank you for your email confirmation. Now you can login your account.')  
+    else:  
+        return HttpResponse('Activation link is invalid!')
+
+class CustomPasswordResetView(PasswordResetView):
+    form_class = CustomPasswordResetForm  
+    template_name = 'predictsa20/password_reset_form.html'  # Specify your template name
+    success_url = reverse_lazy('password_reset_done')
+
+    def form_valid(self, form):
+        # Check if the entered username and email match a user in the database
+        username = form.cleaned_data['username']
+        email = form.cleaned_data['email']
+
+        try:
+            user = User.objects.get(username=username, email=email)
+        except User.DoesNotExist:
+            messages.error(self.request, 'Invalid username or email.')
+            return HttpResponseRedirect(self.get_success_url())
+
+        # If the user is found, proceed with sending the password reset email
+        form.save(request=self.request)
+
+        # Add your custom logic here if needed
+
+        return super().form_valid(form)
+    
+#unwanted
+# def register_user4(request):
+#     # form=RegisterUserForm()
+#     if request.method=='POST':
+#         form=RegisterUserForm(request.POST)
+    
+#         if form.is_valid():
+#             user = form.save(commit=False)
+#             user.is_active = False
+#             user.save()
+            
+#             current_site = get_current_site(request)  
+#             mail_subject = 'Activation link has been sent to your email id'   
+#             message = render_to_string('acc_active_email.html', {  
+#                     'user': user,  
+#                     'domain': current_site.domain,  
+#                     'uid':urlsafe_base64_encode(force_bytes(user.pk)),  
+#                     'token':account_activation_token.make_token(user),  
+#                 })  
+#             to_email = form.cleaned_data.get('email')  
+#             email = EmailMessage(  
+#                             mail_subject, message, to=[to_email]  
+#                 )  
+#             email.send()  
+#             messages.success(request,"Please confirm your email address to complete the registration") 
+#             return redirect('home')
+    
+#         else:  
+        
+#             form = RegisterUserForm()  
+#             return render(request, 'predictsa20/register_user2.html', {'form': form})
+#     return render(request, 'predictsa20/register_user2.html')
+
+def user_input_form(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+
+        if not username:
+            messages.warning(request, 'Please enter a valid username.')
+            return redirect('user_input_form')
+
+        # Redirect to user_submissions with the entered username
+        return redirect('user_submissions', username=username)
+
+    return render(request, 'predictsa20/user_input_form.html')
+
+def user_submissions(request, username):
+    # Fetch all submissions for the specified user
+    user_submissions = Submissions.objects.filter(susername=username)
+
+    # Fetch related match details for each submission
+    submission_details = []
+    for submission in user_submissions:
+        match = Match.objects.get(match_id=submission.smatch_id)
+        submission_details.append({
+            'smatch_id': submission.smatch_id,
+            'match_team_A': match.match_team_A,
+            'match_team_B': match.match_team_B,
+            'predicted_team': submission.predicted_team,
+            'match_winner': match.match_winner,
+        })
+
+    context = {
+        'username': username,
+        'submissions': submission_details,
+    }
+
+    return render(request, 'predictsa20/user_submissions.html', context)
+
