@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from phonenumber_field.modelfields import PhoneNumberField
 
 class UserInfo(models.Model):
     # user_ids = models.IntegerField(primary_key=True)
@@ -40,3 +41,7 @@ class Submissions(models.Model):
     def __str__(self):
         return f"{self.susername} team {self.smatch_id}  {self.predicted_team}"
  
+class Foo(models.Model):
+    name = models.CharField(max_length=100)
+    is_true = models.BooleanField(default=False)
+    phone_number = PhoneNumberField(blank=True,region="IN")

@@ -37,6 +37,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "easyaudit",
+    "import_export",
+    "login_history",
+    "axes",
     "predictsa20",
 ]
 
@@ -48,6 +52,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "easyaudit.middleware.easyaudit.EasyAuditMiddleware",
+    "axes.middleware.AxesMiddleware"
 ]
 
 ROOT_URLCONF = "predict20.urls"
@@ -123,3 +129,8 @@ EMAIL_POST = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER ='photo2pruthvi@gmail.com'
 EMAIL_HOST_PASSWORD ='eyue bhnz futr oezs'
+
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesStandaloneBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]

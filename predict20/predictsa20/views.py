@@ -302,7 +302,7 @@ def user_input_form(request):
 
 def user_submissions(request, username):
     # Fetch all submissions for the specified user
-    user_submissions = Submissions.objects.filter(susername=username)
+    user_submissions = Submissions.objects.filter(susername=username).order_by('smatch_id')
 
     # Fetch related match details for each submission
     submission_details = []
